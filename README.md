@@ -1,6 +1,5 @@
 # battlelogs
 - - -
-
 A minimal personal journaling system, for the command-line, I wrote for myself.
 
 ## License
