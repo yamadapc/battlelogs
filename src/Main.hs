@@ -81,7 +81,7 @@ battleLogsPthOf = (</> ".battlelogs.md")
 
 getHeader :: IO String
 getHeader = liftM formatTime' getCurrentTime
-  where formatTime' = formatTime defaultTimeLocale "%x %X\n"
+  where formatTime' = formatTime defaultTimeLocale "# %x %X\n"
 
 getEditorMessage :: IO String
 getEditorMessage = withSystemTempFile "battlelogs.md" $ \fp _ -> do
