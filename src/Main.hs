@@ -38,6 +38,8 @@ main = do
        then execInit
     else if args `isPresent` command "show"
        then execShow
+    else if args `isPresent` shortOption 'p'
+       then battleLogsPth >>= putStrLn
     else printUsage
   where getOptions = getArgs >>= optionsWithUsage usage
         printUsage = putStr usage
@@ -47,9 +49,11 @@ usage = unlines [ "Usage:"
                 , "      blg init"
                 , "      blg commit [-m=<message>]"
                 , "      blg show"
-                , "      blg [-h]"
+                , "      blg [-hp]"
+                , ""
                 , "Options:"
-                , "      -h  Show this help message"
+                , "      -h --help  Show this help message"
+                , "      -p --path  Print the current `.battlelogs.md` in use"
                 ]
 
 execInit :: IO ()
