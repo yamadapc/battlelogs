@@ -1,6 +1,0 @@
-Usage:
-      blg init
-      blg commit [-m=<message>]
-      blg [-h]
-Options:
-      -h  Show this help message

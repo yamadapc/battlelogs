@@ -19,14 +19,14 @@ import Control.Monad (liftM)
 import Data.Time (getCurrentTime, formatTime)
 import System.Directory (doesFileExist, getCurrentDirectory,
                         getTemporaryDirectory, removeFile)
-import System.Environment (getEnv)
+import System.Environment (getArgs, getEnv)
 import System.FilePath ((</>))
 import System.IO (Handle, hClose, hFlush, openTempFile, stdout)
 import System.IO.Error (catchIOError)
 import System.Locale (defaultTimeLocale)
 import System.Process (system)
 import System.Console.Docopt (Arguments, command, getArg, isPresent,
-                             optionsWithUsageFile, shortOption)
+                             optionsWithUsage, shortOption)
 
 main :: IO ()
 main = do
@@ -37,10 +37,17 @@ main = do
     else if args `isPresent` command "init"
        then execInit
     else printUsage
+  where getOptions = getArgs >>= optionsWithUsage usage
+        printUsage = putStr usage
 
-  where usageFile = "USAGE.txt"
-        getOptions = optionsWithUsageFile usageFile
-        printUsage = readFile usageFile >>= putStr
+usage :: String
+usage = unlines [ "Usage:"
+                , "      blg init"
+                , "      blg commit [-m=<message>]"
+                , "      blg [-h]"
+                , "Options:"
+                , "      -h  Show this help message"
+                ]
 
 execInit :: IO ()
 execInit = do
