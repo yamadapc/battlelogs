@@ -15,7 +15,7 @@
 -- along with this program.  If not, see <http://www.gnu.org/licenses/>.
 
 import Control.Exception (finally)
-import Control.Monad (liftM)
+import Control.Monad (liftM, void)
 import Data.Time (getCurrentTime, formatTime)
 import System.Directory (doesFileExist, getCurrentDirectory,
                         getTemporaryDirectory, removeFile)
@@ -36,6 +36,8 @@ main = do
        then execCommit args
     else if args `isPresent` command "init"
        then execInit
+    else if args `isPresent` command "show"
+       then execShow
     else printUsage
   where getOptions = getArgs >>= optionsWithUsage usage
         printUsage = putStr usage
@@ -44,6 +46,7 @@ usage :: String
 usage = unlines [ "Usage:"
                 , "      blg init"
                 , "      blg commit [-m=<message>]"
+                , "      blg show"
                 , "      blg [-h]"
                 , "Options:"
                 , "      -h  Show this help message"
@@ -59,6 +62,12 @@ execCommit args = getMessage >>= appendToLog
   where getMessage = if args `isPresent` shortOption 'm'
                          then liftM (++ "\n") (getArg args (shortOption 'm'))
                          else getEditorMessage
+
+execShow :: IO ()
+execShow = do
+    pagerCmd <- getEnv "PAGER"
+    targetPth <- battleLogsPth
+    void $ system $ pagerCmd ++ " " ++ targetPth
 
 appendToLog :: String -> IO ()
 appendToLog str = do

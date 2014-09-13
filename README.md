@@ -13,6 +13,7 @@ cabal install
 Usage:
       blg init
       blg commit [-m=<message>]
+      blg show
       blg [-h]
 Options:
       -h  Show this help message
@@ -31,6 +32,10 @@ logs file.
 The `blg init` command is meant to create "local" battle logs. Running it will
 create an empty `.battlelogs.md` file in the current directory, which will
 automatically become `blg`'s output file.
+
+`blg show` (as of right now) will simply open the `.battlelogs.md` file in use
+in the system's `$PAGER`. Pretty colors and a better logging display (and
+format) are a _todo_.
 
 ## License
 This code is licensed under the GPLv2 License. See [LICENSE](/LICENSE) for more
