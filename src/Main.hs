@@ -79,7 +79,7 @@ appendToLog :: String -> IO ()
 appendToLog str = do
     header <- getHeader
     targetPth <- battleLogsPth
-    appendFile targetPth (header ++ str)
+    appendFile targetPth (header ++ str ++ "\n")
 
 battleLogsPth :: IO FilePath
 battleLogsPth =  do
@@ -96,7 +96,8 @@ battleLogsPthOf = (</> ".battlelogs.md")
 
 getHeader :: IO String
 getHeader = liftM formatTime' getCurrentTime
-  where formatTime' = formatTime defaultTimeLocale "# %x %X\n"
+  where headingLine = "==================================================\n"
+        formatTime' = formatTime defaultTimeLocale ("%x %X\n" ++ headingLine)
 
 getEditorMessage :: IO String
 getEditorMessage = withSystemTempFile "battlelogs.md" $ \fp _ -> do
