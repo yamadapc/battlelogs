@@ -17,39 +17,78 @@
 import Control.Exception (finally)
 import Control.Monad (liftM)
 import Data.Time (getCurrentTime, formatTime)
-import System.Directory (getCurrentDirectory, getTemporaryDirectory, removeFile)
+import System.Directory (doesFileExist, getCurrentDirectory,
+                        getTemporaryDirectory, removeFile)
 import System.Environment (getEnv)
 import System.FilePath ((</>))
-import System.IO -- (SeekMode(..), Handle, hClose, hFlush, hGetContents,
-                 -- hPutStrLn, hSeek, openTempFile, stdout)
+import System.IO (Handle, hClose, hFlush, hGetContents, hPutStrLn, IOMode(..),
+                 openFile, openTempFile, stdout)
 import System.IO.Error (catchIOError)
 import System.Locale (defaultTimeLocale)
 import System.Process (system)
-
+import System.Console.Docopt (Arguments, command, getArg, isPresent,
+                             optionsWithUsageFile, shortOption)
 
 main :: IO ()
-main = withSystemTempFile "battleLogs.md" $ \fp _ -> do
-    -- Capture output from the standard editor
-    openInEditor fp
+main = do
+    args <- getOptions
 
-    -- Append entry to battlelogs
-    fh <- openFile fp ReadMode
+    if args `isPresent` command "commit"
+       then execCommit args
+    else if args `isPresent` command "init"
+       then execInit
+    else printUsage
+
+  where usageFile = "USAGE.txt"
+        getOptions = optionsWithUsageFile usageFile
+        printUsage = readFile usageFile >>= putStr
+
+execInit :: IO ()
+execInit = do
+    cwd <- getCurrentDirectory
+    writeFile (battleLogsPthOf cwd) ""
+
+execCommit :: Arguments -> IO ()
+execCommit args = do
+    m <- message
+    appendToLog m
+  where message = if args `isPresent` shortOption 'm'
+                         then liftM (++ "\n") (getArg args (shortOption 'm'))
+                         else getEditorMessage
+
+appendToLog :: String -> IO ()
+appendToLog str = do
     header <- getHeader
-    c <- hGetContents fh
     targetPth <- battleLogsPth
-
     targetFh <- openFile targetPth AppendMode
-    hPutStrLn targetFh (header ++ c)
-
-    -- Clean-up
-    hClose fh
-    hClose targetFh
+    hPutStrLn targetFh (header ++ str)
+    hFlush targetFh
 
 battleLogsPth :: IO FilePath
-battleLogsPth =  liftM logsPthOf logsDir
-    where logsDir = catchIOError (getEnv "HOME") (const getCurrentDirectory)
-          logsPthOf = (</> ".battlelogs.md")
+battleLogsPth =  do
+    cwd <- getCurrentDirectory
+    let initedPth = battleLogsPthOf cwd
+    isInited <- doesFileExist initedPth
+    if isInited
+        then return initedPth
+        else catchIOError (liftM battleLogsPthOf (getEnv "HOME"))
+                          (const $ return initedPth)
 
+battleLogsPthOf :: FilePath -> FilePath
+battleLogsPthOf = (</> ".battlelogs.md")
+
+getHeader :: IO String
+getHeader = liftM formatTime' getCurrentTime
+  where formatTime' = formatTime defaultTimeLocale "%x %X\n"
+
+getEditorMessage :: IO String
+getEditorMessage = withSystemTempFile "battlelogs.md" $ \fp _ -> do
+    openInEditor fp
+    fh <- openFile fp ReadMode
+    hGetContents fh
+
+prompt :: String -> IO String
+prompt str = putStr str >> hFlush stdout >> getLine
 
 openInEditor :: FilePath -> IO ()
 openInEditor fp = do
@@ -57,13 +96,6 @@ openInEditor fp = do
     _ <- system $ editorCmd ++ " " ++ fp
     return ()
   where promptForEditor = prompt "What editor should I use? "
-
-prompt :: String -> IO String
-prompt str = putStr str >> hFlush stdout >> getLine
-
-getHeader :: IO String
-getHeader = liftM formatTime' getCurrentTime
-  where formatTime' = formatTime defaultTimeLocale "%x %X\n"
 
 -- From "Real World Haskell"
 withSystemTempFile :: String -> (FilePath -> Handle -> IO a) -> IO a
