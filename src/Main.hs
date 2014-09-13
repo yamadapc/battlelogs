@@ -21,8 +21,7 @@ import System.Directory (doesFileExist, getCurrentDirectory,
                         getTemporaryDirectory, removeFile)
 import System.Environment (getEnv)
 import System.FilePath ((</>))
-import System.IO (Handle, hClose, hFlush, hGetContents, hPutStrLn, IOMode(..),
-                 openFile, openTempFile, stdout)
+import System.IO (Handle, hClose, hFlush, openTempFile, stdout)
 import System.IO.Error (catchIOError)
 import System.Locale (defaultTimeLocale)
 import System.Process (system)
@@ -49,10 +48,8 @@ execInit = do
     appendFile (battleLogsPthOf cwd) ""
 
 execCommit :: Arguments -> IO ()
-execCommit args = do
-    m <- message
-    appendToLog m
-  where message = if args `isPresent` shortOption 'm'
+execCommit args = getMessage >>= appendToLog
+  where getMessage = if args `isPresent` shortOption 'm'
                          then liftM (++ "\n") (getArg args (shortOption 'm'))
                          else getEditorMessage
 
@@ -82,8 +79,7 @@ getHeader = liftM formatTime' getCurrentTime
 getEditorMessage :: IO String
 getEditorMessage = withSystemTempFile "battlelogs.md" $ \fp _ -> do
     openInEditor fp
-    fh <- openFile fp ReadMode
-    hGetContents fh
+    readFile fp
 
 prompt :: String -> IO String
 prompt str = putStr str >> hFlush stdout >> getLine
