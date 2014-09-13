@@ -10,18 +10,23 @@ cabal install
 
 ## Usage
 ```
+$ blg
 Usage:
       blg init
       blg commit [-m=<message>]
       blg show
-      blg [-h]
+      blg [-hp]
+
 Options:
-      -h  Show this help message
+      -h --help  Show this help message
+      -p --path  Print the current `.battlelogs.md` in use
+
+      -m --message Enter an entry without spawning an editor
 ```
 
 To add entries to the battle log do:
 ```
-blg commit -m "Hello World"
+$ blg commit -m "Hello World"
 ```
 
 This will create a `.battlelogs.md` file in your `$HOME` directory and add an
