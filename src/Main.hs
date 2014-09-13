@@ -54,6 +54,8 @@ usage = unlines [ "Usage:"
                 , "Options:"
                 , "      -h --help  Show this help message"
                 , "      -p --path  Print the current `.battlelogs.md` in use"
+                , ""
+                , "      -m --message Enter an entry without spawning an editor"
                 ]
 
 execInit :: IO ()
