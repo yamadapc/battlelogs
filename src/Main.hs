@@ -46,7 +46,7 @@ main = do
 execInit :: IO ()
 execInit = do
     cwd <- getCurrentDirectory
-    writeFile (battleLogsPthOf cwd) ""
+    appendFile (battleLogsPthOf cwd) ""
 
 execCommit :: Arguments -> IO ()
 execCommit args = do
@@ -60,9 +60,7 @@ appendToLog :: String -> IO ()
 appendToLog str = do
     header <- getHeader
     targetPth <- battleLogsPth
-    targetFh <- openFile targetPth AppendMode
-    hPutStrLn targetFh (header ++ str)
-    hFlush targetFh
+    appendFile targetPth (header ++ str)
 
 battleLogsPth :: IO FilePath
 battleLogsPth =  do
